@@ -1,0 +1,155 @@
+---
+- name: Set fact based on OS
+  set_fact:
+    ovs_dir: "{{ redhat_dir }}"
+  when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
+
+- name: Set fact based on OS
+  set_fact:
+    ovs_dir: "{{ debian_dir }}"
+  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"
+
+- name: Download OVS CentOS/RedHat
+  get_url:
+    url: "{{ ovs_file }}"
+    dest: /tmp/
+
+- name: Create directory for CentOS/RedHat
+  file:
+    path: /root/rpmbuild/SOURCES
+    state: directory
+  become: true
+  when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
+
+- name: Copy archive for CentOS/RedHat
+  copy:
+    remote_src: true
+    src: "{{ ovs_temp_file }}"
+    dest: /root/rpmbuild/SOURCES/
+  become: true
+  when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
+
+- name: Unpack OVS for Ubuntu
+  unarchive:
+    src: "{{ ovs_temp_file }}"
+    dest: /root/
+  become: true
+  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"
+
+- name: Unpack OVS for CentOS/RedHat
+  unarchive:
+    src: "{{ ovs_temp_file }}"
+    dest: /root/rpmbuild/SOURCES/
+  become: true
+  when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
+
+- name: Find flow header files
+  shell: "find {{ ovs_dir }} -type f -name flow.h"
+  register: flowfiles
+  become: true
+
+- name: Update FLOW MAX MPLS labels
+  shell: >
+    sed -i 's/define FLOW_MAX_MPLS_LABELS .*/define FLOW_MAX_MPLS_LABELS {{ MAX_MPLS }}/g' {{ item }} &&
+    sed -i 's/sizeof(struct flow_tnl) + sizeof(struct flow_nsh) + 300/sizeof(struct flow_tnl) + sizeof(struct flow_nsh) + 284 + (4 * ROUND_UP(FLOW_MAX_MPLS_LABELS, 2))/g' {{ item }}
+  with_items: "{{ flowfiles.stdout_lines }}"
+  become: true
+
+- name: Install Generic OVS dependencies
+  package:
+    name: "{{ item }}"
+    state: installed
+  become: true
+  with_items:
+    - graphviz
+    - autoconf
+    - automake
+    - bzip2
+    - openssl
+    - procps
+    - python-qt4
+    - wget
+    - gcc
+
+- name: Install Debian/Ubuntu OVS dependencies
+  apt:
+    name: "{{ item }}"
+    state: installed
+    update_cache: yes
+  become: true
+  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"
+  with_items:
+    - build-essential
+    - fakeroot
+    - dh-make
+    - dh-autoreconf
+    - debhelper
+    - libssl-dev
+    - pkg-config
+    - python-all
+    - python-zopeinterface
+    - python-twisted-conch
+
+- name: Install CentOS/RedHat OVS dependencies
+  yum:
+    name: "{{ item }}"
+    state: installed
+    update_cache: yes
+  become: true
+  when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
+  with_items:
+    - make
+    - python-devel
+    - openssl-devel
+    - kernel-devel
+    - kernel-debug-devel
+    - rpm-build
+    - redhat-rpm-config
+    - libtool
+    - python-six
+    - checkpolicy
+    - selinux-policy-devel
+
+- block:
+  - name: Make for Debian/Ubuntu
+    command: fakeroot ./debian/rules binary
+    args:
+      chdir: "{{ ovs_dir }}"
+    environment:
+      DEB_BUILD_OPTIONS: 'parallel=8 nocheck'
+    become: true
+
+  - name: Check if packages are installed
+    command: "dpkg-query -W {{ item }}"
+    register: check_debs
+    # failed_when: my_package_check_deb.rc > 1
+    # changed_when: my_package_check_deb.rc == 1
+    with_items: "{{ debian_ovs_packages }}"
+    become: true
+
+  - debug:
+      var: check_debs
+  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"
+
+# - block:
+#   - name: Remove problematic line
+#     command: sed -i '/ovs-test.8/d' rhel/openvswitch.spec*
+#     become: true
+#
+#   - name: Make for CentOS/RedHat
+#     command: rpmbuild -bb --nocheck ./rhel/openvswitch.spec
+#     args:
+#       chdir: "{{ ovs_dir }}"
+#     become: true
+#
+#   - name: Check if packages are installed
+#     command: "rpm -q {{ item }}"
+#     register: check_rpms
+#     # failed_when: check_rpms.rc > 1
+#     # changed_when: check_rpms.rc == 1
+#     with_items: "{{ centos_ovs_packages }}"
+#     become: true
+#
+#   - debug:
+#       var: check_debs
+#   when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"

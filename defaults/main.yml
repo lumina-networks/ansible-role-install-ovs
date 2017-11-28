@@ -1,0 +1,16 @@
+---
+ovs_version: 2.8.1
+ovs_file: http://openvswitch.org/releases/openvswitch-{{ovs_version}}.tar.gz
+ovs_temp_file: /tmp/openvswitch-{{ovs_version}}.tar.gz
+redhat_dir: /root/rpmbuild/SOURCES/openvswitch-{{ovs_version}}
+debian_dir: /root/openvswitch-{{ovs_version}}
+MAX_MPLS: 10
+debian_ovs_packages:
+  - openvswitch-common*.deb
+  - openvswitch-datapath-dkms*.deb
+  - openvswitch-controller*.deb
+  - openvswitch-pki*.deb
+  - openvswitch-switch*.deb
+  - libopenvswitch*deb
+centos_ovs_packages:
+  - openvswitch*.rpm
