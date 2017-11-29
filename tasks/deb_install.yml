@@ -1,0 +1,21 @@
+---
+  - block:
+    - name: Make for Debian/Ubuntu
+      command: fakeroot ./debian/rules binary
+      args:
+        chdir: "{{ deb_dir }}"
+      environment:
+        DEB_BUILD_OPTIONS: 'parallel=8 nocheck'
+      become: true
+
+    # - name: Check if packages are installed
+    #   command: "dpkg-query -W {{ item }}"
+    #   register: check_debs
+    #   # failed_when: my_package_check_deb.rc > 1
+    #   # changed_when: my_package_check_deb.rc == 1
+    #   with_items: "{{ debian_ovs_packages }}"
+    #   become: true
+
+    - debug:
+        var: check_debs
+  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"

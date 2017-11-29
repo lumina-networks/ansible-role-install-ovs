@@ -1,0 +1,30 @@
+---
+  - block:
+    - name: Configure for CentOS/RedHat
+      command: ./configure
+      args:
+        chdir: "{{ el_dir }}"
+      become: true
+
+    - name: Make for CentOS/RedHat
+      command: make rpm-fedora
+      args:
+        chdir: "{{ el_dir }}"
+      environment:
+        RPMBUILD_OPT: '--without check'
+      become: true
+
+    - name: Install compiled packages
+      yum:
+        name: "{{ item }}"
+        state: installed
+      with_items: "{{ el_ovs_packages }}"
+      become: true
+
+    - name: Start OVS
+      service:
+        name: openvswitch
+        state: started
+        enabled: yes
+
+    when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
