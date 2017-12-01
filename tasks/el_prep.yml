@@ -25,6 +25,13 @@
         state: latest
         update_cache: yes
         exclude: kernel*
+      become: true
+
+    - name: Install Python deps
+      pip:
+        name: "{{ item }}"
+      with_items: "{{ python_libs }}"
+      become: true
 
     - name: Install CentOS/RedHat OVS dependencies
       yum:

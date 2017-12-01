@@ -15,9 +15,14 @@ generic_deps:
   - bzip2
   - openssl
   - procps
-  - python-qt4
   - wget
   - gcc
+python_libs:
+  - six
+  - sphinx
+  - twisted
+  # - python-zope-interface
+  # - python-qt4
 el_deps:
   - make
   - openssl-devel
@@ -32,12 +37,11 @@ el_deps:
   - automake
   - systemd-units
   - openssl
-  - python-devel
   - python
-  - python-twisted-core
-  - python-zope-interface
-  - python-six
+  - python-devel
   - python-sphinx
+  - python-twisted-core
+  - python-six
   - desktop-file-utils
   - groff
   - graphviz

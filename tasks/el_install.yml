@@ -4,12 +4,14 @@
       command: ./configure
       args:
         chdir: "{{ el_dir }}"
+        creates:  "{{ el_dir }}/Makefile"
       become: true
 
     - name: Make for CentOS/RedHat
       command: make rpm-fedora
       args:
         chdir: "{{ el_dir }}"
+        creates: "{{el_dir}}/rpm/rpmbuild/RPMS/x86_64/openvswitch-2.8.1-1.el7.centos.x86_64.rpm"
       environment:
         RPMBUILD_OPT: '--without check'
       become: true
@@ -26,5 +28,6 @@
         name: openvswitch
         state: started
         enabled: yes
+      become: true
 
     when: ansible_os_family == "CentOS" or ansible_os_family == "RedHat"
