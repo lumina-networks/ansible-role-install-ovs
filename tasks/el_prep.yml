@@ -14,9 +14,7 @@
       become: true
 
     - name: Unpack OVS for CentOS/RedHat
-      unarchive:
-        src: "/tmp/{{ ovs_package }}"
-        dest: "{{ el_base_dir }}"
+      command: "tar -xzf /tmp/{{ ovs_package }} -C {{ el_base_dir }}"
       become: true
 
     - name: Yum update
