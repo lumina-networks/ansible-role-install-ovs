@@ -8,14 +8,17 @@
         DEB_BUILD_OPTIONS: 'parallel=8 nocheck'
       become: true
 
-    # - name: Check if packages are installed
-    #   command: "dpkg-query -W {{ item }}"
-    #   register: check_debs
-    #   # failed_when: my_package_check_deb.rc > 1
-    #   # changed_when: my_package_check_deb.rc == 1
-    #   with_items: "{{ debian_ovs_packages }}"
-    #   become: true
+    - name: Install a packages
+      apt:
+        deb: "{{ item }}"
+      with_items: "{{ deb_ovs_packages }}"
+      become: true
 
-    - debug:
-        var: check_debs
-  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"
+    - name: Start OVS
+      service:
+        name: openvswitch-switch
+        state: started
+        enabled: yes
+      become: true
+
+    when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"

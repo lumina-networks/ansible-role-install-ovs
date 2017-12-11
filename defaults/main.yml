@@ -60,12 +60,13 @@ deb_deps:
   - python-zopeinterface
   - python-twisted-conch
 deb_ovs_packages:
-  - openvswitch-common*.deb
-  - openvswitch-datapath-dkms*.deb
-  - openvswitch-controller*.deb
-  - openvswitch-pki*.deb
-  - openvswitch-switch*.deb
-  - libopenvswitch*deb
+  - "{{deb_base_dir}}/libopenvswitch_2.8.1-1_amd64.deb"
+  - "{{deb_base_dir}}/libopenvswitch-dev_2.8.1-1_amd64.deb"
+  - "{{deb_base_dir}}/openvswitch-common_2.8.1-1_amd64.deb"
+  - "{{deb_base_dir}}/openvswitch-switch_2.8.1-1_amd64.deb"
+  - "{{deb_base_dir}}/openvswitch-datapath-dkms_2.8.1-1_all.deb"
+  - "{{deb_base_dir}}/openvswitch-pki_2.8.1-1_all.deb"
+  - "{{deb_base_dir}}/python-openvswitch_2.8.1-1_all.deb"
 el_ovs_packages:
   - "{{el_dir}}/rpm/rpmbuild/RPMS/x86_64/openvswitch-2.8.1-1.el7.centos.x86_64.rpm"
   - "{{el_dir}}/rpm/rpmbuild/RPMS/noarch/python-openvswitch-2.8.1-1.el7.centos.noarch.rpm"
