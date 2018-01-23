@@ -1,4 +1,10 @@
 ---
+- name: set distro-specific variables
+  include_vars: '{{ item }}'
+  with_first_found:
+    - '{{ ansible_os_family }}.yml'
+    - default.yml
+
 - name: Set fact based on OS
   set_fact:
     ovs_dir: "{{ el_dir }}"
